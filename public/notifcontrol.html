@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Control - Transparent UI</title>
+    <style>
+        /* FONT LOKAL */
+        @font-face {
+            font-family: 'Big Noodle Titling';
+            src: url('Assets/Font/big_noodle_titling.ttf') format('truetype');
+        }
+
+        /* PALET WARNA FUTURISTIK */
+        :root {
+            --background-color: #0D0F12;
+            --font-color: #EAEAEA;
+            --accent-color: #A855F7;
+            --accent-glow: rgba(168, 85, 247, 0.5);
+            --border-color-opaque: #3f3f46;
+            --border-color: rgba(63, 63, 70, 0.6); 
+            --blue-side-accent: #00AFFF;
+            --red-side-accent: #F94868;
+            --active-color: #00FF8C;
+            --blob-color-1: #9333ea;
+            --blob-color-2: #27272A;
+        }
+
+        /* PENGATURAN DASAR & LATAR BELAKANG BLOB */
+        body {
+            font-family: 'Big Noodle Titling', sans-serif;
+            color: var(--font-color);
+            background-color: var(--background-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .blob-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; z-index: -1; opacity: 0.4;
+        }
+
+        .blob {
+            position: absolute;
+            background: linear-gradient(45deg, var(--blob-color-1), var(--blob-color-2));
+            border-radius: 50%;
+            animation: blob-float 20s infinite ease-in-out alternate;
+            filter: blur(100px);
+        }
+        .blob:nth-child(1) { width: 450px; height: 450px; top: 10%; left: 15%; animation-duration: 18s; }
+        .blob:nth-child(2) { width: 550px; height: 550px; bottom: 15%; right: 10%; animation-delay: 2s; animation-duration: 22s; }
+
+        @keyframes blob-float {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(50px, -30px) scale(1.2); }
+        }
+
+        /* CONTAINER UTAMA */
+        .main-container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            z-index: 1;
+            padding: 20px; /* Tambahkan padding untuk spasi di layar besar */
+            box-sizing: border-box; /* Pastikan padding tidak menambah ukuran */
+        }
+        
+        /* GAYA TRANSPARAN UMUM UNTUK PANEL */
+        .transparent-panel {
+            background-color: rgba(26, 28, 32, 0.25); 
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* PANEL KIRI - KONTROL UTAMA */
+        .control-panel {
+            width: 450px;
+        }
+
+        .status-bar {
+            background-color: rgba(0, 0, 0, 0.3);
+            text-align: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #status {
+            font-size: 2.5em;
+            color: var(--font-color);
+            font-style: oblique;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .controls-body {
+            display: flex;
+            padding: 20px;
+            gap: 15px;
+        }
+
+        .separator {
+            width: 30px;
+            background-color: rgba(234, 234, 234, 0.15);
+        }
+
+        .objective-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sub-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sub-buttons button {
+            flex: 1;
+            height: 150px;
+        }
+        
+        /* GAYA TOMBOL UMUM */
+        button {
+            width: 100%;
+            padding: 15px 10px;
+            font-family: 'Big Noodle Titling', sans-serif;
+            font-size: 1.3em;
+            border: 2px solid var(--border-color-opaque);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--font-color);
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px var(--accent-glow);
+            border-color: var(--accent-color);
+            background-color: rgba(168, 85, 247, 0.2);
+        }
+
+        /* GAYA TOMBOL SPESIFIK */
+        .blue-side-btn { border-color: var(--blue-side-accent); }
+        .blue-side-btn:hover {
+            background-color: rgba(0, 175, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 175, 255, 0.5);
+        }
+        
+        .red-side-btn { border-color: var(--red-side-accent); }
+        .red-side-btn:hover {
+            background-color: rgba(249, 72, 104, 0.2);
+            box-shadow: 0 0 15px rgba(249, 72, 104, 0.5);
+        }
+
+        /* PANEL KANAN - NOTIFIKASI KILL */
+        .kill-notifier {
+            width: 1000px;
+        }
+
+        .notifier-header {
+            background-color: rgba(0, 0, 0, 0.4);
+            font-size: 5em;
+            text-align: center;
+            padding: 5px 0;
+            font-style: oblique;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .notifier-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background-color: transparent;
+        }
+
+        .notifier-buttons button {
+            flex: 1;
+            max-width: 150px;
+            height: 200px;
+            background-color: rgba(234, 234, 234, 0.8);
+            color: #111;
+            border: 3px solid rgba(255,255,255,0.5);
+            font-size: 1.5em;
+        }
+        .notifier-buttons button:hover {
+             border-color: var(--active-color);
+             box-shadow: 0 0 20px var(--active-color);
+             background-color: #fff;
+        }
+        
+        /* ########################################## */
+        /* ## OPTIMASI UNTUK MOBILE (Layar <= 768px) ## */
+        /* ########################################## */
+        @media (max-width: 768px) {
+            body {
+                /* Ganti ke block agar konten bisa di-scroll secara vertikal */
+                display: block; 
+                padding: 20px 10px; /* Beri sedikit padding */
+                overflow-y: auto; /* Aktifkan scroll vertikal jika perlu */
+                min-height: auto;
+            }
+
+            .main-container {
+                flex-direction: column; /* Ubah layout utama menjadi vertikal */
+                gap: 25px; /* Kurangi jarak antar panel */
+                align-items: center; /* Pusatkan panel */
+                padding: 0; /* Hapus padding agar panel bisa 100% width */
+            }
+
+            .control-panel,
+            .kill-notifier {
+                width: 100%; /* Lebar panel menjadi penuh */
+                max-width: 500px; /* Beri batas agar tidak terlalu lebar di tablet */
+            }
+
+            #status {
+                font-size: 2em; /* Kecilkan ukuran font status */
+            }
+
+            .notifier-header {
+                font-size: 2.5em; /* Kecilkan ukuran font header notifikasi */
+            }
+            
+            .controls-body {
+                flex-direction: column; /* Susun kolom objektif secara vertikal */
+                padding: 15px;
+            }
+
+            .separator {
+                display: none; /* Sembunyikan separator di mobile karena tidak relevan */
+            }
+            
+            .notifier-buttons {
+                flex-wrap: wrap; /* Izinkan tombol untuk pindah ke baris baru */
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .notifier-buttons button {
+                height: 100px; /* Kurangi tinggi tombol notifikasi */
+                font-size: 1.2em; /* Kecilkan font tombol notifikasi */
+                /* Buat menjadi 2 kolom. calc(50% - 5px) = 50% lebar dikurangi setengah gap */
+                flex-basis: calc(50% - 5px); 
+                max-width: none; /* Hapus max-width agar flex-basis berfungsi */
+            }
+
+            button {
+                font-size: 1.1em; /* Kecilkan sedikit font tombol umum */
+            }
+        }
+
+        /* LOGO HEADER */
+.overlaytoollogo {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-top: 20px;
+}
+.overlaytoollogo img {
+    max-width: 100%;
+    height: auto;
+}
+
+    </style>
+</head>
+<body>
+    <div class="blob-container">
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+    <div class="main-container">
+        <div class="control-panel transparent-panel">
+            <div class="status-bar">
+                <div id="status">Standby</div>
+            </div>
+            <div class="controls-body">
+                <div class="objective-column">
+                    <button onclick="setVideo('videoPlayer1')">Turtle Spawn</button>
+                    <div class="sub-buttons">
+                        <button class="blue-side-btn" onclick="setVideo('videoPlayer2')">Blue Turtle Slain</button>
+                        <button class="red-side-btn" onclick="setVideo('videoPlayer3')">Red Turtle Slain</button>
+                    </div>
+                </div>
+                <div class="separator"></div>
+                <div class="objective-column">
+                    <button onclick="setVideo('videoPlayer4')">Lord Spawn</button>
+                    <div class="sub-buttons">
+                        <button class="blue-side-btn" onclick="setVideo('videoPlayer5')">Blue Lord Slain</button>
+                        <button class="red-side-btn" onclick="setVideo('videoPlayer6')">Red Lord Slain</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="kill-notifier transparent-panel">
+            <div class="notifier-header"> MWEHEHEHEHEH </div>
+            <div class="notifier-buttons">
+                <button onclick="setVideo('videoPlayer7')">First blood</button>
+                <button onclick="setVideo('videoPlayer8')">doublekill</button>
+                <button onclick="setVideo('videoPlayer9')">Triple Kill</button>
+                <button onclick="setVideo('videoPlayer10')">Maniac</button>
+                <button onclick="setVideo('videoPlayer11')">Savage</button>
+                <button onclick="setVideo('videoPlayer12')">Wipe Out</button>
+            </div>
+        </div>
+        
+    </div> 
+
+
+
+    <div class="overlaytoollogo">
+            <img src="Assets/Other/OVERLAYTOOLLOGO.png" alt="">
+    </div>
+
+    
+    
+    <script>
+        // SCRIPT INI TIDAK DIUBAH SESUAI PERMINTAAN
+        function setVideo(playerId) {
+            localStorage.setItem('currentVideo', playerId);
+            document.querySelectorAll('video').forEach(video => {
+                video.style.display = 'none';
+                video.pause();
+            });
+            const videoElement = document.getElementById(playerId);
+            if (videoElement) {
+                videoElement.style.display = 'block';
+                videoElement.play();
+            }
+            updateStatus(`M${playerId.replace('videoPlayer', '')}`);
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = `${message}`;
+        }
+
+        document.addEventListener('keydown', (event) => {
+            const functionKeys = {
+                'w': 'videoPlayer1', 'a': 'videoPlayer2', 's': 'videoPlayer3',
+                'r': 'videoPlayer4', 'd': 'videoPlayer5', 'f': 'videoPlayer6',
+                '1': 'videoPlayer7', '2': 'videoPlayer8', '3': 'videoPlayer9',
+                '4': 'videoPlayer10', '5': 'videoPlayer11', '6': 'videoPlayer12'
+            };
+            if (functionKeys[event.key]) {
+                event.preventDefault();
+                setVideo(functionKeys[event.key]);
+            }
+        });
+    </script>
+    <script src="crosshost.js"></script>
+</body>
+
+</html>

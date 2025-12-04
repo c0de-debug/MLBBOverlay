@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Result</title>
+    <style>
+        @font-face {
+            font-family: 'Big Noodle Titling';
+            src: url('Assets/Font/big_noodle_titling.ttf') format('truetype');
+        }
+        :root {
+            --background-color: #0D0F12;
+            --font-color: #EAEAEA;
+            --accent-color: #A855F7;
+            --accent-glow: rgba(168, 85, 247, 0.5);
+            --active-color: #00FF8C;
+        }
+        body {
+            font-family: 'Big Noodle Titling', sans-serif;
+       
+            color: var(--font-color);
+            display: flex;
+
+            margin: 0;
+            text-align: center;
+            letter-spacing: 1.5px;
+        }
+        .result-wrapper {
+            width: 800px;
+            height: 200px;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+            display: flex;
+            justify-content: center;
+        }
+        .result-wrapper.visible { opacity: 1; transform: scale(1); }
+        h1 {
+            color: var(--accent-color);
+            display: flex;
+            justify-content: center;
+            font-size: 4em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+        h2 {
+            font-size: 7em;
+            color: var(--active-color);
+            margin-top: 0;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px var(--active-color);
+        }
+        .map img{
+          scale: 0.7;
+          margin-top: -175px;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="result-container"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const resultContainer = document.getElementById('result-container');
+            const displayResult = (state) => {
+                if (state && state.status === 'finished' && state.result) {
+                    resultContainer.innerHTML = `
+                        <div class="result-wrapper">
+                            <div class="map">
+                                <img src="Assets/map/${state.result}.png" alt="${state.result}">
+                            </div>
+                            </div>
+                    `;
+                    setTimeout(() => { document.querySelector('.result-wrapper').classList.add('visible'); }, 100);
+                } else {
+                    resultContainer.innerHTML = '';
+                }
+            };
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'mapDrawState') {
+                    const newState = event.newValue ? JSON.parse(event.newValue) : null;
+                    displayResult(newState);
+                }
+            });
+            const initialState = localStorage.getItem('mapDrawState');
+            if (initialState) {
+                displayResult(JSON.parse(initialState));
+            }
+        });
+    </script>
+</body>
+<script src="crossclient.js"></script>
+</html>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postgame JSON Editor - Sharp UI</title>
+    <style>
+        /* FONT SETUP */
+        @font-face {
+            font-family: 'Big Noodle Titling';
+            src: url('Assets/Font/big_noodle_titling.ttf') format('truetype');
+        }
+
+        /* PALET WARNA FUTURISTIK */
+        :root {
+            --background-color: #0D0F12;
+            --card-color: #1A1C20;
+            --font-color: #EAEAEA;
+            --accent-color: #A855F7;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --border-color: #3f3f46;
+            --blue-side-accent: #00AFFF;
+            --red-side-accent: #F94868;
+            --active-color: #00FF8C;
+            --blob-color-1: #9333ea;
+            --blob-color-2: #27272A;
+        }
+
+        /* KEYFRAME ANIMATIONS */
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes blob-1-animation {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -30px) scale(1.1); }
+            50% { transform: translate(-20px, 40px) scale(0.9); }
+            75% { transform: translate(30px, 20px) scale(1.05); }
+        }
+        @keyframes blob-2-animation {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-15px, 25px) scale(0.95); }
+            50% { transform: translate(25px, -15px) scale(1.1); }
+            75% { transform: translate(-20px, -20px) scale(1); }
+        }
+
+        /* RESET & BODY SETUP */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Big Noodle Titling', sans-serif;
+            margin: 10px; /* Margin lebih kecil untuk mobile */
+            background-color: var(--background-color);
+            color: var(--font-color);
+            overflow-x: hidden;
+            position: relative;
+            letter-spacing: 1.5px;
+        }
+
+        /* BACKGROUND */
+        .blob-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            filter: blur(100px);
+        }
+        .blob {
+            position: absolute;
+            opacity: 0.4;
+        }
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--blob-color-1);
+            top: 10%;
+            left: 10%;
+            animation: blob-1-animation 20s infinite ease-in-out;
+        }
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--blob-color-2);
+            bottom: 5%;
+            right: 5%;
+            animation: blob-2-animation 25s infinite ease-in-out;
+        }
+
+        /* MAIN LAYOUT */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 10px; /* Padding lebih kecil untuk mobile */
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem; /* Font lebih kecil untuk mobile */
+            color: var(--font-color);
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        h2 {
+            font-size: 2rem; /* Font lebih kecil untuk mobile */
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* SECTION & TEAM STYLES */
+        .section {
+            margin-bottom: 30px;
+            padding: 15px; /* Padding lebih kecil untuk mobile */
+            background-color: rgba(26, 28, 32, 0.8);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column; /* Ubah ke kolom untuk mobile */
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+        .team-blue h2 { color: var(--blue-side-accent); border-color: var(--blue-side-accent); }
+        .team-red h2 { color: var(--red-side-accent); border-color: var(--red-side-accent); }
+        .game-data h2 { color: var(--accent-color); border-color: var(--accent-color); }
+
+        .section-content {
+            flex-grow: 1;
+            overflow-x: auto; /* Memungkinkan tabel di-scroll horizontal */
+        }
+
+        /* TABLE STYLES */
+        table {
+            width: 100%;
+            min-width: 800px; /* Lebar minimum agar tidak terlalu sempit */
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            color: var(--font-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+        td {
+            background-color: #2a2d33;
+        }
+
+        /* HERO PICK & IMAGE */
+        .heropick {
+            display: flex;
+            flex-direction: row; /* Kembali ke baris untuk mobile */
+            justify-content: space-around; /* Menyebar hero pick */
+            gap: 10px;
+            margin-top: 0; /* Hapus margin atas */
+            order: -1; /* Pindahkan ke atas section-content */
+        }
+        .image-box {
+            width: 55px; /* Ukuran lebih kecil untuk mobile */
+            height: 55px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-box img {
+            width: 80px; /* Disesuaikan agar pas */
+            object-fit: contain;
+            margin-top: 40px; /* Disesuaikan */
+        }
+        .team-blue .image-box { border-color: var(--blue-side-accent); box-shadow: 0 0 10px rgba(0, 175, 255, 0.5); }
+        .team-red .image-box { border-color: var(--red-side-accent); box-shadow: 0 0 10px rgba(249, 72, 104, 0.5); }
+
+        /* INPUT & BUTTONS */
+        input {
+            width: 100%;
+            padding: 8px 10px;
+            background-color: #33363d;
+            border: 1px solid var(--border-color);
+            color: var(--font-color);
+            font-family: 'Big Noodle Titling', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        input[readonly] {
+            background-color: #2a2d33;
+            cursor: not-allowed;
+            color: #888;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column; /* Tumpuk tombol di mobile */
+            align-items: center; /* Pusatkan tombol */
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .save-btn, .reset-btn {
+            width: 100%; /* Tombol lebar penuh */
+            max-width: 300px; /* Batasi lebar maksimum */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .save-btn { background-color: var(--active-color); box-shadow: 0 0 15px rgba(0, 255, 140, 0.4); }
+        .save-btn:hover { background-color: #00e67e; box-shadow: 0 0 25px rgba(0, 255, 140, 0.7); transform: translateY(-2px); }
+        .reset-btn { background-color: var(--red-side-accent); box-shadow: 0 0 15px rgba(249, 72, 104, 0.4); }
+        .reset-btn:hover { background-color: #e83a59; box-shadow: 0 0 25px rgba(249, 72, 104, 0.7); transform: translateY(-2px); }
+
+        /* DROPDOWN */
+        .dropdown-container {
+            position: relative;
+        }
+        .dropdown-list {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            right: 0;
+            background: var(--card-color);
+            border: 1px solid var(--accent-color);
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .dropdown-list::-webkit-scrollbar { width: 8px; }
+        .dropdown-list::-webkit-scrollbar-track { background: #2a2d33; }
+        .dropdown-list::-webkit-scrollbar-thumb { background: var(--accent-color); }
+        .dropdown-list::-webkit-scrollbar-thumb:hover { background: #c287f9; }
+        .dropdown-list div {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 1.1rem;
+        }
+        .dropdown-list div:hover {
+            background-color: var(--accent-color);
+        }
+
+        /* LOGO HEADER */
+        .overlaytoollogo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+        .overlaytoollogo img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ================================================= */
+        /* ============= MEDIA QUERIES (RESPONSIVE) ======== */
+        /* ================================================= */
+
+        /* Aturan untuk layar yang lebih besar (Tablet & Desktop) */
+        @media (min-width: 768px) {
+            body {
+                margin: 20px; /* Kembalikan margin original */
+            }
+            .container {
+                padding: 20px; /* Kembalikan padding original */
+            }
+            h1 {
+                font-size: 3.5rem; /* Kembalikan ukuran font original */
+            }
+            h2 {
+                font-size: 2.5rem; /* Kembalikan ukuran font original */
+            }
+            .button-container {
+                flex-direction: row; /* Kembalikan tombol ke samping */
+                justify-content: center;
+                gap: 20px;
+            }
+            .save-btn, .reset-btn {
+                width: auto; /* Lebar otomatis */
+                max-width: none;
+                padding: 12px 25px;
+            }
+        }
+
+        /* Aturan untuk layar sangat besar (Desktop besar) */
+        @media (min-width: 1200px) {
+            .section {
+                flex-direction: row; /* Kembalikan ke samping */
+                gap: 25px;
+            }
+            .heropick {
+                flex-direction: column; /* Kembalikan ke kolom */
+                justify-content: flex-start;
+                gap: 0;
+                margin-top: 100px; /* Kembalikan margin atas */
+                order: 0; /* Kembalikan posisi original */
+            }
+            .image-box {
+                width: 70px; /* Kembalikan ukuran original */
+                height: 70px;
+            }
+            .image-box img {
+                width: 100px;
+                margin-top: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blob-container">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <h1>Postgame JSON Editor</h1>
+        
+        <div class="section team-blue">
+            <div class="heropick">
+                <div id="image-box-1" class="image-box"><img id="image-display-1" src=""></div>
+                <div id="image-box-2" class="image-box"><img id="image-display-2" src=""></div>
+                <div id="image-box-3" class="image-box"><img id="image-display-3" src=""></div>
+                <div id="image-box-4" class="image-box"><img id="image-display-4" src=""></div>
+                <div id="image-box-5" class="image-box"><img id="image-display-5" src=""></div>
+            </div>
+            <div class="section-content">
+                <h2>Blue Side</h2>
+                <table id="blueside-table">
+                    <thead>
+                        <tr>
+                            
+                            <th>LVL</th>
+                            <th>KDA</th>
+                            <th>GOLD</th>
+                            <th>SPELL</th>
+                            <th>ITEM 1</th>
+                            <th>ITEM 2</th>
+                            <th>ITEM 3</th>
+                            <th>ITEM 4</th>
+                            <th>ITEM 5</th>
+                            <th>ITEM 6</th>
+                            <th>MVP</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section team-red">
+             <div class="heropick">
+                <div id="image-box-6" class="image-box"><img id="image-display-6" src=""></div>
+                <div id="image-box-7" class="image-box"><img id="image-display-7" src=""></div>
+                <div id="image-box-8" class="image-box"><img id="image-display-8" src=""></div>
+                <div id="image-box-9" class="image-box"><img id="image-display-9" src=""></div>
+                <div id="image-box-10" class="image-box"><img id="image-display-10" src=""></div>
+            </div>
+            <div class="section-content">
+                <h2>Red Side</h2>
+                <table id="redside-table">
+                    <thead>
+                        <tr>
+                            
+                            <th>LVL</th>
+                            <th>KDA</th>
+                            <th>GOLD</th>
+                            <th>SPELL</th>
+                            <th>ITEM 1</th>
+                            <th>ITEM 2</th>
+                            <th>ITEM 3</th>
+                            <th>ITEM 4</th>
+                            <th>ITEM 5</th>
+                            <th>ITEM 6</th>
+                            <th>MVP</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section game-data">
+            <div class="section-content">
+                <h2>Game Data</h2>
+                <table id="gamedata-table">
+                    <thead>
+                        <tr>
+                            <th>Row</th>
+                            <th>Stats</th>
+                            <th>Number</th>
+                            <th>Misc</th>
+                            <th>SPELL</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button class="reset-btn" onclick="resetItems()">Reset Items</button>
+            <button class="save-btn" onclick="saveJson()">Save to JSON</button>
+        </div>
+    </div>
+
+    <div class="overlaytoollogo">
+            <img src="Assets/Other/OVERLAYTOOLLOGO.png" alt="">
+        </div>
+    
+    <audio id="hero-voice" muted></audio>
+
+<script>
+    let jsonData = [];
+    let items = [];
+    let ws = new WebSocket('ws://localhost:3000');
+
+    Promise.all([
+        fetch('/api/postgame').then(response => response.json()),
+        fetch('/database/items.json').then(response => response.json())
+    ])
+    .then(([postgameData, itemsData]) => {
+        jsonData = postgameData;
+        items = itemsData;
+        renderTables();
+        updateSharedStorage();
+    })
+    .catch(error => console.error('Error loading data:', error));
+
+    ws.onopen = () => {
+        console.log('Connected to WebSocket server');
+    };
+
+    ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'update' && msg.data.postgame) {
+            jsonData = msg.data.postgame;
+            renderTables();
+        }
+    };
+
+    ws.onclose = () => {
+        console.log('Disconnected from WebSocket server');
+    };
+
+    function calculateTotalGold(sideData) {
+        return sideData.reduce((sum, row) => {
+            const gold = parseInt(row.GOLD) || 0;
+            return sum + gold;
+        }, 0);
+    }
+
+    function renderTables() {
+        const blueside = jsonData.slice(0, 5);
+        const redside = jsonData.slice(6, 11);
+        const gamedata = jsonData.slice(12, 21);
+
+        jsonData[12].KDA = calculateTotalGold(blueside).toString();
+        jsonData[16].KDA = calculateTotalGold(redside).toString();
+
+        renderTable(blueside, 'blueside-table', ['LVL', 'KDA', 'GOLD', 'SPELL', 'ITEM 1', 'ITEM 2', 'ITEM 3', 'ITEM 4', 'ITEM 5', 'ITEM 6']);
+        renderTable(redside, 'redside-table', ['LVL', 'KDA', 'GOLD', 'SPELL', 'ITEM 1', 'ITEM 2', 'ITEM 3', 'ITEM 4', 'ITEM 5', 'ITEM 6']);
+        renderTable(gamedata, 'gamedata-table', ['LVL', 'KDA', 'GOLD', 'SPELL']);
+    }
+    
+    function renderTable(data, tableId, fields) {
+        const tbody = document.getElementById(tableId).querySelector('tbody');
+        tbody.innerHTML = '';
+
+        const selectedMvp = JSON.parse(localStorage.getItem('selectedMvp')) || {};
+
+        data.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            let rowHtml = '';
+
+            if (tableId === 'gamedata-table') {
+                rowHtml += `<td>${row.LVL || ''}</td>`;
+            }
+            
+            fields.forEach(field => {
+                if (tableId === 'gamedata-table' && field === 'LVL') {
+                    return;
+                }
+
+                if ((tableId === 'gamedata-table' && field === 'KDA' && (index === 0 || index === 4)) || (field === 'KDA' && row[field] === "PURPLE MEAN DON’T EDIT")) {
+                    rowHtml += `<td><input type="text" value="${row[field] || ''}" readonly></td>`;
+                } 
+                else if (['SPELL', 'ITEM 1', 'ITEM 2', 'ITEM 3', 'ITEM 4', 'ITEM 5', 'ITEM 6'].includes(field) && tableId !== 'gamedata-table') {
+                    rowHtml += `
+                        <td>
+                            <div class="dropdown-container">
+                                <input type="text" value="${row[field] || ''}" oninput="showDropdown(this, '${field}', ${index}, '${tableId}')" onchange="updateJson(${index}, '${field}', this.value, '${tableId}')" autocomplete="off">
+                                <div class="dropdown-list" data-field="${field}" data-index="${index}" data-table="${tableId}"></div>
+                            </div>
+                        </td>`;
+                } 
+                else {
+                    rowHtml += `<td><input type="text" value="${row[field] || ''}" onchange="updateJson(${index}, '${field}', this.value, '${tableId}')"></td>`;
+                }
+            });
+
+            if (tableId === 'blueside-table' || tableId === 'redside-table') {
+                const checkboxId = `${tableId}-mvp-${index}`;
+                const isChecked = selectedMvp.id === checkboxId;
+                rowHtml += `
+                    <td>
+                        <input type="checkbox" id="${checkboxId}" class="mvp-checkbox" 
+                               data-index="${index}" data-tableid="${tableId}" 
+                               onchange="handleMvpCheck(this)" ${isChecked ? 'checked' : ''}
+                               style="transform: scale(1.5); cursor: pointer;">
+                    </td>`;
+            }
+
+            tr.innerHTML = rowHtml;
+            tbody.appendChild(tr);
+        });
+        
+        if (tableId === 'gamedata-table') {
+            const headers = document.getElementById(tableId).querySelectorAll('thead th');
+            headers[0].textContent = 'Statistic';
+            headers[1].textContent = 'Blue Side';
+            headers[2].textContent = 'Red Side';
+            headers[3].textContent = 'Misc';
+            if (headers.length > 4) {
+                headers[4].textContent = 'Spell/Objective';
+            }
+        }
+    }
+
+    // ======================================================= //
+    // =========== FUNGSI MVP YANG TELAH DIPERBARUI ============ //
+    // ======================================================= //
+    function handleMvpCheck(checkbox) {
+        // 1. Pastikan hanya satu checkbox yang tercentang
+        const allCheckboxes = document.querySelectorAll('.mvp-checkbox');
+        allCheckboxes.forEach(cb => {
+            if (cb !== checkbox) {
+                cb.checked = false;
+            }
+        });
+
+        // 2. Jika checkbox dicentang, kumpulkan data. Jika tidak, hapus data.
+        if (checkbox.checked) {
+            const index = parseInt(checkbox.dataset.index);
+            const tableId = checkbox.dataset.tableid;
+
+            // Tentukan mapping berdasarkan ID tabel dan indeks
+            let jsonIndex, heroId, nameId;
+            const names = JSON.parse(localStorage.getItem("names")) || [];
+            const side = tableId === 'blueside-table' ? 'blue' : 'red';
+
+            if (side === 'blue') {
+                jsonIndex = index;       // Objek 1-5  -> json[0-4]
+                heroId = index + 1;      // image-box-1 to 5
+                nameId = index + 3;      // name-box-3 to 7
+            } else { // red side
+                jsonIndex = index + 6;   // Objek 7-11 -> json[6-10]
+                heroId = index + 6;      // image-box-6 to 10
+                nameId = index + 10;     // name-box-10 to 14
+            }
+
+            // 3. Kumpulkan semua data yang diperlukan dengan aman
+            const playerStats = jsonData[jsonIndex];
+            const heroImgElement = document.getElementById(`image-display-${heroId}`);
+            const heroImgSrc = heroImgElement ? heroImgElement.src : '';
+            const nickname = names[nameId - 1] || ''; // Array 'names' 0-indexed, nameId 1-indexed
+
+            // --- PENGECEKAN PENTING ---
+            if (!playerStats) {
+                console.error(`Error: playerStats tidak ditemukan untuk jsonIndex: ${jsonIndex}`);
+                // Hentikan eksekusi jika data statistik utama tidak ada
+                localStorage.removeItem('mvpData');
+                localStorage.removeItem('selectedMvp');
+                checkbox.checked = false; // Batalkan centang
+                alert('Gagal memilih MVP: Data statistik pemain tidak ditemukan.');
+                return; 
+            }
+
+            const mvpData = {
+                stats: {
+                    LVL: playerStats.LVL,
+                    KDA: playerStats.KDA,
+                    GOLD: playerStats.GOLD,
+                    SPELL: playerStats.SPELL,
+                    'ITEM 1': playerStats['ITEM 1'],
+                    'ITEM 2': playerStats['ITEM 2'],
+                    'ITEM 3': playerStats['ITEM 3'],
+                    'ITEM 4': playerStats['ITEM 4'],
+                    'ITEM 5': playerStats['ITEM 5'],
+                    'ITEM 6': playerStats['ITEM 6'],
+                },
+                heroImg: heroImgSrc,
+                nickname: nickname,
+                playerPhoto: nickname ? `Assets/player/${nickname}.png` : 'Assets/player/noplayer.png',
+                side: side
+            };
+
+            // --- INI ADALAH BAGIAN DEBUGGING TERPENTING ---
+            console.log("================ MVP DATA DIPERBARUI ================");
+            console.log("Data yang akan disimpan ke localStorage:", mvpData);
+            console.log(`Nickname diambil dari 'names' index ${nameId - 1}:`, nickname);
+            console.log("URL Gambar Hero:", heroImgSrc);
+            console.log("=====================================================");
+            
+            // 4. Simpan ke localStorage
+            localStorage.setItem('mvpData', JSON.stringify(mvpData));
+            localStorage.setItem('selectedMvp', JSON.stringify({ id: checkbox.id })); // Simpan ID checkbox
+            localStorage.setItem('mvpUpdateTime', Date.now()); // Picu update di halaman display
+
+        } else {
+            // Jika tidak ada yang tercentang, hapus data dari localStorage
+            console.log("MVP dibatalkan, data dihapus dari localStorage.");
+            localStorage.removeItem('mvpData');
+            localStorage.removeItem('selectedMvp');
+            localStorage.setItem('mvpUpdateTime', Date.now()); // Picu update (untuk menyembunyikan display)
+        }
+    }
+
+
+    function showDropdown(input, field, index, tableId) {
+        const container = input.parentElement;
+        const dropdown = container.querySelector('.dropdown-list');
+        const search = input.value.toLowerCase();
+        dropdown.innerHTML = '';
+
+        const filteredItems = items.filter(item => item.toLowerCase().includes(search));
+        filteredItems.forEach(item => {
+            const div = document.createElement('div');
+            div.textContent = item;
+            div.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                input.value = item;
+                input.focus();
+                const inputEvent = new Event('input', { bubbles: true });
+                input.dispatchEvent(inputEvent);
+                setTimeout(() => {
+                    updateJson(index, field, item, tableId);
+                    dropdown.style.display = 'none';
+                }, 0);
+            });
+            div.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                input.value = item;
+                input.focus();
+                const inputEvent = new Event('input', { bubbles: true });
+                input.dispatchEvent(inputEvent);
+                setTimeout(() => {
+                    updateJson(index, field, item, tableId);
+                    dropdown.style.display = 'none';
+                }, 0);
+            });
+            dropdown.appendChild(div);
+        });
+
+        dropdown.style.display = filteredItems.length > 0 ? 'block' : 'none';
+    }
+
+    function updateJson(index, field, value, tableId) {
+        const normalizedValue = value;
+        if (tableId === 'blueside-table') {
+            jsonData[index][field] = normalizedValue;
+        } else if (tableId === 'redside-table') {
+            jsonData[index + 6][field] = normalizedValue;
+        } else if (tableId === 'gamedata-table') {
+            jsonData[index + 12][field] = normalizedValue;
+        }
+        renderTables();
+        updateSharedStorage();
+    }
+
+    function resetItems() {
+        const itemFields = ['ITEM 1', 'ITEM 2', 'ITEM 3', 'ITEM 4', 'ITEM 5', 'ITEM 6'];
+        for (let i = 0; i <= 4; i++) {
+            itemFields.forEach(field => {
+                jsonData[i][field] = '';
+            });
+        }
+        for (let i = 6; i <= 10; i++) {
+            itemFields.forEach(field => {
+                jsonData[i][field] = '';
+            });
+        }
+        renderTables();
+        updateSharedStorage();
+    }
+
+    function updateSharedStorage() {
+        ws.send(JSON.stringify({ type: 'update', data: { postgame: jsonData } }));
+    }
+
+    function saveJson() {
+        fetch('/api/postgame', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(jsonData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            updateSharedStorage();
+        })
+        .catch(error => console.error('Error saving JSON:', error));
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown-container')) {
+            document.querySelectorAll('.dropdown-list').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+        }
+    });
+</script>
+
+    <script src="script/herodisplayisolated.js"></script>
+    <script src="crosshost.js"></script>
+</body>
+</html>

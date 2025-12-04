@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLBB Overlay Control Hub</title>
+    <style>
+        /* ================== FONT KUSTOM ================== */
+        @font-face {
+            font-family: 'Big Noodle Titling';
+            src: url('Assets/Font/big_noodle_titling.ttf') format('truetype');
+        }
+
+        /* ================== GAYA DASAR & TEMA ================== */
+        :root {
+            --background-color: #18181B;
+            --card-color: #27272A;
+            --font-color: #F4F4F5;
+            --accent-color: #A855F7;
+            --accent-glow: rgba(168, 85, 247, 0.3);
+            --accent-glow-hover: rgba(168, 85, 247, 0.6);
+            --success-color: #22c55e;
+            --blob-color-1: rgba(168, 85, 247, 0.2);
+            --blob-color-2: rgba(79, 70, 229, 0.15);
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* ================== BLOB ANIMATION ================== */
+        .blob-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .blob {
+            position: absolute;
+            background: var(--blob-color-1);
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: blob-animation 20s infinite alternate;
+            opacity: 0.6;
+        }
+        .blob:nth-child(1){width:300px;height:300px;top:10%;left:5%;background:var(--blob-color-2);animation-delay:0s}
+        .blob:nth-child(2){width:400px;height:400px;top:50%;left:70%;animation-delay:5s}
+        .blob:nth-child(3){width:250px;height:250px;top:80%;left:20%;background:var(--blob-color-2);animation-delay:10s}
+        @keyframes blob-animation{0%{transform:scale(1) translate(0,0)}25%{transform:scale(1.1) translate(-50px,30px)}50%{transform:scale(.9) translate(80px,-60px)}75%{transform:scale(1.2) translate(-30px,40px)}100%{transform:scale(1) translate(0,0)}}
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* ================== LOGO HEADER ================== */
+        .overlaytoollogo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        .overlaytoollogo img {
+            max-width: 1500px;
+            width: 100%;
+            height: auto;
+        }
+        
+        /* ================== WEBSITE BUTTON ================== */
+        .website-button-wrapper {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .website-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            text-decoration: none;
+            font-family: 'Big Noodle Titling', sans-serif;
+            font-size: 1.5em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.3s ease;
+        }
+
+        .website-button:hover {
+            background-color: #c084fc;
+            box-shadow: 0 0 25px var(--accent-glow-hover);
+            transform: translateY(-3px);
+        }
+
+        /* ================== IP DISPLAY ================== */
+        .ip-display {
+            text-align: center;
+            margin: -10px auto 20px auto;
+            padding: 12px 20px;
+            background-color: rgba(39, 39, 42, 0.5);
+            border: 1px solid #3f3f46;
+            border-radius: 5px;
+            max-width: 500px;
+            font-size: 1.1em;
+            color: var(--font-color);
+        }
+        .ip-display span {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* ================== INFO BOX (BARU) ================== */
+        .info-box {
+            text-align: left;
+            margin: 0 auto 30px auto;
+            padding: 20px 25px;
+            background-color: rgba(39, 39, 42, 0.6);
+            border-left: 3px solid var(--accent-color);
+            border-radius: 5px;
+            max-width: 900px;
+            font-size: 0.95em;
+            color: #d4d4d8;
+        }
+        .info-box h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            color: var(--font-color);
+        }
+        .info-box p {
+            margin: 12px 0;
+            line-height: 1.7;
+        }
+        .info-box strong {
+            color: var(--font-color);
+        }
+        .info-box hr {
+            border: none;
+            height: 1px;
+            background-color: #3f3f46;
+            margin: 20px 0;
+        }
+        .info-box em {
+            color: #facc15; /* Yellow for emphasis */
+            font-style: normal;
+            font-weight: bold;
+        }
+
+
+        /* ================== GAYA TABS ================== */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--card-color);
+        }
+
+        .tab-button {
+            font-family: 'Big Noodle Titling', sans-serif;
+            font-size: 2em;
+            letter-spacing: 1.5px;
+            color: var(--font-color);
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            position: relative;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+        
+        .tab-button::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-color);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tab-button.active,
+        .tab-button:hover {
+            opacity: 1;
+        }
+
+        .tab-button.active::after {
+            transform: scaleX(1);
+        }
+
+        /* === PERBAIKAN CSS UNTUK TAB PANE === */
+        .tab-content .tab-pane {
+            display: none; /* Sembunyikan semua panel secara default */
+        }
+        .tab-content .tab-pane.active.grid-container {
+            display: grid; /* Tampilkan panel aktif yang merupakan grid container sebagai grid */
+        }
+        .tab-content .tab-pane.active:not(.grid-container) {
+            display: block; /* Tampilkan panel aktif yang BUKAN grid container (seperti Readme) sebagai block */
+        }
+        
+        /* ================== LAYOUT KARTU (GRID) ================== */
+        .grid-container {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        h3{font-family:'Big Noodle Titling',sans-serif;text-transform:uppercase;font-weight:400;letter-spacing:1.5px;text-shadow:0 0 5px var(--accent-glow)}
+        .tool-card{background-color:var(--card-color);border:1px solid #3f3f46;border-top:3px solid var(--accent-color);display:flex;flex-direction:column;transition:transform .3s ease,box-shadow .3s ease;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+        .tool-card:hover{transform:translateY(-8px);box-shadow:0 0 25px var(--accent-glow-hover)}
+        .screenshot{background-color:#111;background-image:linear-gradient(rgba(168,85,247,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(168,85,247,.05) 1px,transparent 1px);background-size:20px 20px;width:100%;height:170px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#555;text-transform:uppercase}
+        .screenshot img{width:100%;height:100%;object-fit:cover;opacity:.9;transition:opacity .3s ease}
+        .tool-card:hover .screenshot img{opacity:1}
+        .info{padding:20px;display:flex;flex-direction:column;flex-grow:1}
+        .info h3{margin-top:0;margin-bottom:auto;padding-bottom:15px;font-size:1.5em}
+        .button-group{display:flex;gap:10px;margin-top:15px}
+        .button-group button{flex-grow:1;padding:12px;border:2px solid var(--accent-color);border-radius:0;cursor:pointer;font-family:'Segoe UI',sans-serif;font-size:.9em;font-weight:700;text-transform:uppercase;transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+        
+        /* --- Urutan CSS Diubah Untuk Prioritas Gaya --- */
+        .copy-button{background-color:transparent;color:var(--accent-color)}
+        .copy-button:hover{background-color:var(--accent-color);color:var(--background-color)}
+        .open-button{background-color:var(--accent-color);color:var(--background-color)}
+        .open-button:hover{background-color:#c084fc;border-color:#c084fc;box-shadow:0 0 10px #c084fc}
+        .copy-button.copied{border-color:var(--success-color);background-color:var(--success-color);color:var(--background-color);transition:none}
+
+        /* ================== GAYA TAB README ================== */
+        .readme-content {
+            background-color: var(--card-color);
+            padding: 30px;
+            border-radius: 8px;
+            margin: 0 auto;
+            max-width: 1000px;
+            border-left: 3px solid var(--accent-color);
+            color: #d4d4d8;
+        }
+        .license-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+        .license-column {
+            flex: 1;
+            min-width: 300px;
+        }
+        .license-column h3 {
+            font-size: 1.8em;
+            color: var(--font-color);
+        }
+        .license-column p {
+            line-height: 1.6;
+            text-align: justify;
+        }
+        .readme-content hr {
+            border: none;
+            height: 1px;
+            background-color: #3f3f46;
+            margin: 40px 0;
+        }
+        .readme-content h2 {
+            font-family: 'Big Noodle Titling', sans-serif;
+            text-align: center;
+            font-size: 2.8em;
+            letter-spacing: 2px;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-glow);
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+        .support-buttons, .social-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            color: #fff !important;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+            text-align: center;
+            border: none;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 1em;
+        }
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .btn-saweria { background: linear-gradient(145deg, #ffc940, #ff9a00); }
+        .btn-paypal { background-color: #00457C; }
+        .btn-sociabuzz { background-color: #01ce6f; }
+        .btn-kofi { background-color: #9d6c54; }
+        .btn-discord { background-color: #5865F2; }
+        .btn-instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+        .btn-tiktok { background-color: #010101; color: #fff; box-shadow: 2px 2px 0 #FE2C55, -2px -2px 0 #25F4EE; }
+        .btn-tiktok:hover { box-shadow: 4px 4px 0 #FE2C55, -4px -4px 0 #25F4EE; }
+        .btn-facebook { background-color: #1877F2; }
+    </style>
+</head>
+<body>
+
+    <div class="blob-bg">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+
+    <div class="container">
+    
+        <div class="overlaytoollogo">
+            <img src="Assets/Other/OVERLAYTOOLLOGO.png" alt="Overlay Tool Logo">
+        </div>
+
+        <div class="website-button-wrapper">
+            <a href="https://www.falsejl.my.id" target="_blank" class="website-button">Visit FalseJL Website</a>
+        </div>
+        
+        <div id="ipDisplay" class="ip-display">
+            Loading IP Address...
+        </div>
+
+        <div class="info-box">
+            <h4>When to Use 'Copy by IP' vs 'Copy Localhost'</h4>
+            <p><strong>1. Use "Copy by IP" for Multi-Device Setups (e.g., Main PC + Streaming PC):</strong><br>
+            If you run this Control Hub on one PC and your streaming software (OBS) is on an <em>entirely different</em> PC, you <strong>must</strong> use the IP link. This allows your streaming PC to find the overlay on your main PC over the network.</p>
+            
+            <p><strong>2. Use "Copy Localhost" for Single-Device Setups (All-in-One PC):</strong><br>
+            For Display Overlays, if you run this Control Hub and OBS on the <strong>same</strong> PC, "Copy Localhost" is simpler and highly recommended.</p>
+        
+            <p><strong>⚠️ Important IP Note:</strong> Your "Active Server IP" above can change (e.g., after a router restart). If your IP-based overlays suddenly stop working, check this page for the new IP and update the links in your streaming software.</p>
+        
+            <hr>
+        
+            <h4>Kapan Menggunakan 'Copy by IP' vs 'Copy Localhost'</h4>
+            <p><strong>1. Gunakan "Copy by IP" untuk Pengaturan Multi-Perangkat (misal: PC Utama + PC Streaming):</strong><br>
+            Jika Anda menjalankan Control Hub ini di satu PC dan software streaming (OBS) Anda berada di PC yang <em>berbeda</em>, Anda <strong>wajib</strong> menggunakan link IP. Ini agar PC streaming dapat menemukan overlay di PC utama Anda melalui jaringan.</p>
+        
+            <p><strong>2. Gunakan "Copy Localhost" untuk Pengaturan Satu Perangkat (PC All-in-One):</strong><br>
+            Untuk Display Overlay, jika Anda menjalankan Control Hub dan OBS di PC yang <strong>sama</strong>, menggunakan "Copy Localhost" lebih disarankan karena lebih sederhana dan andal.</p>
+        
+            <p><strong>⚠️ Catatan IP Penting:</strong> "Active Server IP" Anda di atas dapat berubah (misalnya, setelah router di-restart). Jika overlay berbasis IP Anda tiba-tiba tidak berfungsi, periksa kembali halaman ini untuk melihat IP terbaru dan perbarui link di OBS.</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab-target="#control">Control Panel</button>
+            <button class="tab-button" data-tab-target="#display">Display Overlay</button>
+            <button class="tab-button" data-tab-target="#readme">Readme</button>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane active grid-container" id="control">
+                </div>
+            <div class="tab-pane grid-container" id="display">
+                </div>
+            <div class="tab-pane" id="readme">
+                <div class="readme-content">
+                    <div class="license-container">
+                        <div class="license-column">
+                            <h3>1. Usage License and Restrictions</h3>
+                            <p>This web application, FalseOverlayTool, is provided free of charge. You are granted the right to use this application for both personal and commercial projects. This includes customizing, modifying, or further developing the web app to suit your needs. However, this right does not include the right to resell this web application product. Selling, reselling, or distributing this tool for profit in any form is strictly prohibited and violates its terms of use.</p>
+                            <h3>2. Reporting Violations</h3>
+                            <p>The spirit of this project is to support the community. If you find anyone or any entity selling this web app, please report them to us immediately. Your cooperation is crucial to keeping this tool free for everyone.</p>
+                            <h3>3. Credit & Support</h3>
+                            <p>If you find this tool useful for your tournaments or projects, we would be incredibly grateful for a credit or a shoutout. You can support us by simply placing our logo anywhere in your broadcast or event materials. While this is completely optional, your support means the world to us and helps us continue to develop and maintain this tool. Thank you for your understanding and support!</p>
+                        </div>
+                        <div class="license-column">
+                            <h3>1. Lisensi Penggunaan dan Batasan</h3>
+                            <p>Aplikasi web FalseOverlayTool ini disediakan secara gratis. Anda diberikan hak untuk menggunakan aplikasi ini untuk proyek pribadi ataupun komersial. Hak ini mencakup kebebasan untuk mengkostumisasi, memodifikasi, atau mengembangkan lebih lanjut webapp ini sesuai dengan kebutuhan Anda. Namun, hak ini tidak termasuk hak untuk menjual kembali produk aplikasi web ini. Menjual, menjual kembali, atau mendistribusikan alat ini untuk mendapatkan keuntungan dalam bentuk apa pun sangat dilarang dan melanggar ketentuan penggunaannya.</p>
+                            <h3>2. Laporkan Pelanggaran</h3>
+                            <p>Semangat dari proyek ini adalah untuk mendukung komunitas. Jika Anda menemukan seseorang atau pihak yang memperjualbelikan webapp ini, tolong segera laporkan kepada kami. Kerja sama Anda sangat penting untuk menjaga agar alat ini tetap gratis untuk semua orang.</p>
+                            <h3>3. Kredit & Dukungan</h3>
+                            <p>Jika teman-teman merasa alat ini bermanfaat untuk turnamen atau proyek kalian, kami akan sangat berterima kasih jika teman-teman berkenan memberikan kredit atau shoutout. Anda dapat mendukung kami hanya dengan mencantumkan logo kami di bagian manapun pada siaran atau materi acara Anda. Hal ini bersifat sepenuhnya opsional, namun dukungan dari Anda sangat berarti bagi kami untuk terus melanjutkan pengembangan dan pemeliharaan alat ini. Terima kasih atas pengertian dan dukungannya!</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h2>SUPPORT US!</h2>
+                    <div class="support-buttons">
+                        <a href="https://saweria.co/FalseJL" target="_blank" class="btn btn-saweria">SAWERIA</a>
+                        <a href="https://www.paypal.me/FalseJL" target="_blank" class="btn btn-paypal">PAYPAL</a>
+                        <a href="https://sociabuzz.com/falsejl/tribe" target="_blank" class="btn btn-sociabuzz">SOCIABUZZ</a>
+                        <a href="https://ko-fi.com/falsejl" target="_blank" class="btn btn-kofi">KO-FI</a>
+                    </div>
+                    
+                    <h2>Social</h2>
+                    <div class="social-buttons">
+                        <a href="https://discord.gg/r4tNswJwbV" target="_blank" class="btn btn-discord">Discord</a>
+                        <a href="https://www.instagram.com/false.jl/" target="_blank" class="btn btn-instagram">Instagram (Personal)</a>
+                        <a href="https://www.instagram.com/falsejl.esportsorg/" target="_blank" class="btn btn-instagram">Instagram (Esports)</a>
+                        <a href="https://www.tiktok.com/@false.jl.co" target="_blank" class="btn btn-tiktok">TikTok (Personal)</a>
+                         <a href="https://www.tiktok.com/@falsejl.esportsorganizer" target="_blank" class="btn btn-tiktok">TikTok (Esports)</a>
+                        <a href="https://www.facebook.com/profile.php?id=61560855818677" target="_blank" class="btn btn-facebook">Facebook</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        const serverPort = 3000;
+        const controlFiles = ['control.html','controlban6.html','drawcontrol.html','notifcontrol.html','postgamecontrol.html','schedulecontrol.html'];
+        const displayFiles = ['display.html','display2.html','display2ban6.html','displayban6.html','postdraft.html','postdraft2.html','drawdisplay.html','drawdisplay2.html','drawdisplay3.html','drawfinal.html','scoreboard.html','notifdisplay.html','builds.html','postgame.html','mvpdisplay.html','scheduledisplay.html'];
+        
+        let serverIP = 'localhost'; // Fallback default
+        const ipDisplayElement = document.getElementById('ipDisplay');
+
+        // --- FUNGSI BARU: Ambil dan tampilkan IP saat halaman dimuat ---
+        async function initializeIP() {
+            try {
+                const response = await fetch("/serverip.txt");
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+                }
+                const ip = (await response.text()).trim();
+                if (ip) {
+                    serverIP = ip;
+                    ipDisplayElement.innerHTML = `Active Server IP: <span>${serverIP}</span>`;
+                } else {
+                    throw new Error("serverip.txt is empty.");
+                }
+            } catch (error) {
+                console.error("Could not get server IP:", error);
+                ipDisplayElement.innerHTML = `Could not fetch IP. Using fallback: <span>${serverIP}</span>`;
+                ipDisplayElement.style.color = '#f87171'; // Error color
+            }
+        }
+
+        // --- LOGIKA PEMBUATAN KARTU ---
+        function createToolCard(filename, isControl = false) {
+            const title = filename.replace('.html', '').replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+            let buttonsHTML;
+
+            if (isControl) {
+                buttonsHTML = `
+                    <button class="open-button" data-filename="${filename}">Open (by IP)</button>
+                    <button class="copy-button" data-filename="${filename}" data-copy-type="ip">Copy Link (by IP)</button>`;
+            } else { // This is for Display overlays
+                // The first button gets 'open-button' class for filled styling + 'copy-button' for functionality.
+                // The second button just gets 'copy-button' for outlined styling + functionality.
+                buttonsHTML = `
+                    <button class="open-button copy-button" data-filename="${filename}" data-copy-type="local">Copy Localhost</button>
+                    <button class="copy-button" data-filename="${filename}" data-copy-type="ip">Copy by IP</button>`;
+            }
+            
+            return `
+                <div class="tool-card">
+                    <div class="screenshot">
+                        <img src="Assets/screenshots/${filename}.png" alt="Screenshot for ${title}" onerror="this.style.display='none'; this.parentElement.innerHTML = 'NO PREVIEW AVAILABLE';">
+                    </div>
+                    <div class="info">
+                        <h3>${title}</h3>
+                        <div class="button-group">${buttonsHTML}</div>
+                    </div>
+                </div>`;
+        }
+        
+        // --- INISIALISASI HALAMAN ---
+        async function initializePage() {
+            await initializeIP(); // Wait for the IP to be fetched before proceeding
+
+            const controlContainer = document.getElementById('control');
+            controlContainer.innerHTML = controlFiles.map(filename => createToolCard(filename, true)).join('');
+
+            const displayContainer = document.getElementById('display');
+            displayContainer.innerHTML = displayFiles.map(filename => createToolCard(filename, false)).join('');
+
+            setupButtonListeners();
+            setupTabListeners();
+        }
+
+        // --- FUNGSI UNTUK EVENT LISTENER TOMBOL ---
+        function setupButtonListeners() {
+            document.querySelectorAll(".copy-button").forEach(button => {
+                button.addEventListener("click", async (e) => {
+                    const btn = e.currentTarget;
+                    const filename = btn.dataset.filename;
+                    const copyType = btn.dataset.copyType; // Will be 'local' or 'ip'
+                    const originalText = btn.textContent;
+                    
+                    let url;
+                    if (copyType === 'ip') {
+                        url = `http://${serverIP}:${serverPort}/${filename}`;
+                    } else { // Defaults to 'local'
+                        url = `http://localhost:${serverPort}/${filename}`;
+                    }
+
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(url);
+                        } else {
+                            const textArea = document.createElement("textarea");
+                            textArea.value = url;
+                            textArea.style.position = "absolute";
+                            textArea.style.left = "-9999px";
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(textArea);
+                        }
+                        btn.textContent = "Copied!";
+                        btn.classList.add("copied");
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.classList.remove("copied");
+                        }, 1500);
+                    } catch (error) {
+                        console.error("Failed to copy link:", error);
+                        alert("Failed to copy link. Check console for details.");
+                    }
+                });
+            });
+
+            document.querySelectorAll(".open-button").forEach(button => {
+                // IMPORTANT: Do not attach a click listener if it's also a copy button,
+                // as that functionality is already handled by the listener above.
+                if (button.classList.contains('copy-button')) {
+                    return;
+                }
+
+                button.addEventListener("click", e => {
+                    const filename = e.currentTarget.dataset.filename;
+                    // "Open" is only for control panels, which must use the server IP
+                    const url = `http://${serverIP}:${serverPort}/${filename}`;
+                    window.open(url, "_blank");
+                });
+            });
+        }
+
+        // --- FUNGSI UNTUK EVENT LISTENER TAB ---
+        function setupTabListeners() {
+            const tabButtons = document.querySelectorAll('[data-tab-target]');
+            const tabContents = document.querySelectorAll('.tab-pane');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const target = document.querySelector(button.dataset.tabTarget);
+
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+
+                    target.classList.add('active');
+                    button.classList.add('active');
+                });
+            });
+        }
+        
+        // Panggil fungsi utama untuk memulai semuanya
+        initializePage();
+    </script>
+
+</body>
+</html>

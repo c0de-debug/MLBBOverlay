@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVP Display</title>
+    <style>
+        @font-face {
+            font-family: 'Big Noodle Titling';
+            /* Ganti 'Assets/Font/...' dengan path font Anda yang benar jika berbeda */
+            src: url('Assets/Font/big_noodle_titling.ttf') format('truetype');
+        }
+
+        :root {
+            --background-color: #0D0F12;
+            --font-color: #ffffff;
+            --accent-color: #FBBF24; /* Emas/Kuning untuk MVP */
+            --blue-side-accent: #446879;
+            --red-side-accent: #F94868;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Big Noodle Titling', sans-serif;
+            background-color: var(--background-color);
+            color: var(--font-color);
+        }
+
+        .mainbox{
+            width: 1920px;
+            height: 1080px;
+            display: flex;
+            background-image: url(Assets/Other/full.png);
+            overflow: hidden;
+        }
+
+        .leftbox{
+            width: 1120px;
+            height: 1080px;
+            display: flex;
+            flex-direction: column;
+      
+    
+        }
+
+        .upperleft{
+            width: 1120px;
+            height: 408px;
+            display: flex;
+            align-items: center;
+            font-size: 500px;
+            color: #fff;
+            margin-left: 50px;
+        }
+        .middleleft{
+            width: 1120px;
+            height: 423px;
+            display: flex;
+            margin-left: 30px;
+        }
+
+        .midleft{
+            width: 554px;
+            height: 423px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .herobox{
+            width: 478px;
+            height: 370px;
+           overflow: hidden;
+            background-color: #0D0F12;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #mvp-lvl{
+            width: 50px;
+            height: 50px;
+            background-color: var(--font-color);
+            color: var(--background-color);
+            font-size: 50px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -320px;
+            margin-left: -430px;
+        }
+
+        .herobox img{
+            scale:2;
+            margin-top: 300px;
+            position: absolute;
+        }
+
+        .spelldata{
+            margin-top: -400px;
+            margin-left: 290px;
+            position: absolute;
+        }
+
+        .spelldata img{
+            width: 50px;
+            height: 50px;
+        }
+
+        .midmid{
+            width: 106px;
+            height: 423px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        
+        }
+
+        .itembox{
+            width: 90px;
+            height: 372px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff62;
+        }
+
+        .itembox img{
+            width: 55px;
+            height: 55px;
+            background-color: #0d0f1273;
+            border-radius: 50%;
+            margin: 2px;
+        }
+
+        .midright{
+            width: 460px;
+            height: 423px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-left: 20px;
+        }
+
+        .lowerleft{
+            width: 1120px;
+            height: 249px;
+            display: flex;
+            align-items: center;
+            font-size: 300px;
+            margin-left: 60px;
+        }
+
+        .rightbox{
+            width: 800px;
+            height: 1080px;
+        }
+
+        .rightbox img{
+            margin-left: -50px;
+        }
+
+        .text{
+            font-size: 60px;
+        }
+
+        .text2{
+            font-size: 100px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="mainbox">
+
+        <div class="leftbox">
+            <div class="upperleft">MVP</div>
+            <div class="middleleft">
+                <div class="midleft">
+                    <div class="herobox">
+                        <div id="mvp-lvl">LVL 15</div>
+                        <img id="mvp-hero-img" src="" alt="MVP Hero">
+                         <div class="spelldata" id="mvp-spell-container"></div>
+                    </div>
+                </div>
+                <div class="midmid">
+                    <div class="itembox" id="mvp-items-container"></div>
+                </div>
+                <div class="midright">
+                    <div class="text">KDA</div>
+                    <div class="text2">
+                        <div id="mvp-kda">23/0/1</div>
+                    </div>
+                    <div class="text">GOLD</div>
+                    <div class="text2">
+                        <div id="mvp-gold">22222</div>
+                    
+                    </div>
+                    
+                    
+                   
+                </div>
+            </div>
+            <div class="lowerleft">
+                <div id="mvp-nickname">NICKNAME</div>
+            </div>
+        </div>
+
+        <div class="rightbox">
+            <img id="mvp-player-photo-img" src="Assets/player/noplayer.png" alt="MVP Player">
+        </div>
+    </div>
+
+
+    <script>
+        function updateMvpDisplay() {
+            const mvpContainer = document.getElementById('mvp-container'); // Ini mungkin bisa dihapus jika tidak dipakai
+            const mvpDataString = localStorage.getItem('mvpData');
+
+            if (!mvpDataString) {
+                // Sembunyikan container utama jika tidak ada data
+                document.querySelector('.mainbox').style.display = 'none'; 
+                return;
+            } else {
+                 document.querySelector('.mainbox').style.display = 'flex';
+            }
+
+            const mvpData = JSON.parse(mvpDataString);
+
+            // Ambil elemen
+            const heroImg = document.getElementById('mvp-hero-img');
+            const playerPhotoImg = document.getElementById('mvp-player-photo-img');
+            const nicknameEl = document.getElementById('mvp-nickname');
+            
+            // Elemen stats yang tidak ada di layout utama, mungkin perlu dipindahkan
+            const lvlEl = document.getElementById('mvp-lvl'); 
+            const kdaEl = document.getElementById('mvp-kda');
+            const goldEl = document.getElementById('mvp-gold');
+
+            // === PERUBAHAN DIMULAI DI SINI ===
+            // Target baru untuk spell dan item secara terpisah
+            const spellContainer = document.getElementById('mvp-spell-container');
+            const itemsContainer = document.getElementById('mvp-items-container');
+            // === PERUBAHAN SELESAI DI SINI ===
+
+
+            // Isi data
+            heroImg.src = mvpData.heroImg || '';
+            playerPhotoImg.src = mvpData.playerPhoto || 'Assets/player/noplayer.png';
+            nicknameEl.textContent = mvpData.nickname || 'PLAYER';
+            lvlEl.textContent = `${mvpData.stats.LVL || '0'}`;
+            kdaEl.textContent = mvpData.stats.KDA || '0/0/0';
+            goldEl.textContent = `$${mvpData.stats.GOLD || '0'}`;
+
+            // Pewarnaan berdasarkan sisi (opsional)
+            if (mvpData.side === 'blue') {
+                nicknameEl.style.color = '#fff';
+            } else {
+                nicknameEl.style.color = '#Fff';
+            }
+
+            // === PERUBAHAN DIMULAI DI SINI ===
+
+            // Hapus isi container sebelumnya
+            spellContainer.innerHTML = '';
+            itemsContainer.innerHTML = '';
+
+            // Proses dan tampilkan SPELL
+            const spellName = mvpData.stats.SPELL;
+            if (spellName) {
+                const img = document.createElement('img');
+                img.src = `Assets/itemandspell/${spellName}.png`;
+                img.onerror = () => { img.style.display = 'none'; }; // Sembunyikan jika gambar tidak ditemukan
+                spellContainer.appendChild(img);
+            }
+            
+            // Proses dan tampilkan ITEM
+            const items = [
+                mvpData.stats['ITEM 1'],
+                mvpData.stats['ITEM 2'],
+                mvpData.stats['ITEM 3'],
+                mvpData.stats['ITEM 4'],
+                mvpData.stats['ITEM 5'],
+                mvpData.stats['ITEM 6'],
+            ];
+
+            items.forEach(itemName => {
+                if (itemName) {
+                    const img = document.createElement('img');
+                    img.src = `Assets/itemandspell/${itemName}.png`;
+                    img.onerror = () => { img.style.display = 'none'; }; // Sembunyikan jika gambar tidak ditemukan
+                    itemsContainer.appendChild(img);
+                }
+            });
+
+            // === PERUBAHAN SELESAI DI SINI ===
+        }
+
+        // Dengarkan perubahan dari postgamecontrol.html
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'mvpData' || event.key === 'mvpUpdateTime') {
+                updateMvpDisplay();
+            }
+        });
+
+        // Panggil fungsi saat halaman pertama kali dimuat
+        document.addEventListener('DOMContentLoaded', updateMvpDisplay);
+    </script>
+
+</body>
+<script src="crossclient.js"></script>
+</html>
